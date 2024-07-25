@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import os
+import shutil
 
 import converter 
 import whisper_api as whisper
@@ -10,7 +11,7 @@ input_filetypes=[("All files", "*.*"), ("Audio m4a", "*.m4a"),
                     ("Audio flac", "*.flac"), ("Video mkv", "*.mkv"),
                     ("Video mp4", "*.mp4")]
 
-available_extensions = ["m4a", "wav", "mp3", "flac", "mkv"]
+available_extensions = ["wav", "mp3", "flac", "mkv"]
 
 project_dir = os.getcwd()
 project_dir = project_dir.replace("\\", "/")
@@ -23,7 +24,7 @@ status = False
 available_models = ["tiny", "small", "base", "medium"]
 
 def select_file():
-    global filename, extension, status
+    global filename, extension, status, origname
     filename = filedialog.askopenfilename(
         title="Select a file",
         filetypes=input_filetypes,
@@ -84,16 +85,16 @@ def transcribe():
             now_path = project_dir+"/temp.wav"
             update_status("Converted to wav")
         else:
-            now_path = filename
-        print(now_path)        
+            filename
+            shutil.copy(filename, project_dir+"/temp.wav")
         update_status("Transcripting")
         selected_model_str = selected_model.get()
         if selected_model_str == "": selected_model_str = "tiny"
         if whisper.transcribe(selected_model) == True:
             update_status("Transcripted")
-            with open(now_path.replace(".wav", ".txt"), "r") as f:
-                with open(filename.replace(".wav", "_transcripted.txt"), "w+") as g:
-                    g.write(f.read())
+            end_dest = filename.split(".")[0]+".txt"
+            print(end_dest)
+            shutil.copy("temp.txt", end_dest)
             update_status("Transcripted and saved")
         else:
             update_status("Error in transcripting")
